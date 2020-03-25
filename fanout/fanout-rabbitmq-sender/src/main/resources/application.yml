@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: fanout-spring-boot-rabbitmq-sender
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  datasource:
+    username: root
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3307/clouduser?useSSL=false&serverTimezone=UTC
+    password: 1234
+server:
+  port: 8201
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
