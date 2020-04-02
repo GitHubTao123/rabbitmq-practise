@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yue.mqseckill.mapper.OrderMapper">
+    <insert id="addOrder" parameterType="com.yue.mqseckill.api.entity.SeckillOrder" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into seckill_order
+        (total_price,status_enum,user_id,target_addr,good_id,count)
+        values(
+            #{seckillOrder.totalPrice},
+            #{seckillOrder.statusEnum},
+            #{seckillOrder.userId},
+            #{seckillOrder.targetAddr},
+            #{seckillOrder.goodId},
+            #{seckillOrder.count}
+        )
+    </insert>
+
+    <delete id="handleFailureOrder" parameterType="com.yue.mqseckill.api.entity.SeckillOrder">
+        delete from seckill_order
+        where total_price = #{seckillOrder.totalPrice}
+        and user_id = #{seckillOrder.userId}
+--         ...
+    </delete>
+</mapper>

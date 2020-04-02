@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yue.topicrabbitreceiver.mapper.MyUserDao">
-<!--    <insert id="insertUser" parameterType="com.yue.demorabbitmqreceiver.entity.MyUser" useGeneratedKeys="true" keyColumn="id" keyProperty="id">-->
+<!--    <insert id="insertUser" parameterType="com.yue.directrabbitmqreceiver.entity.MyUser" useGeneratedKeys="true" keyColumn="id" keyProperty="id">-->
 <!--        insert into my_user-->
 <!--        (name,age) values (#{myUser.name},#{myUser.age})-->
 <!--    </insert>-->

@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.yue</groupId>
-    <artifactId>direct-rabbitmq-sender</artifactId>
+    <artifactId>waimai-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>direct-rabbitmq-sender</name>
+    <name>waimai-server</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
