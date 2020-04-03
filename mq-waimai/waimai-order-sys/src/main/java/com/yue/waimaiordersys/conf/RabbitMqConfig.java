@@ -1,12 +1,7 @@
-package com.yue.waimaiserver.conf;
+package com.yue.waimaiordersys.conf;
 
-import com.alibaba.fastjson.JSONObject;
-import com.yue.waimaiserver.api.entity.WaimaiOrder;
-import com.yue.waimaiserver.common.CommonConstant;
-import com.yue.waimaiserver.service.MqMsgLogService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
+import com.yue.waimaiordersys.service.HandleErrorService;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
@@ -23,10 +18,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMqConfig {
 
-    private Logger log = LoggerFactory.getLogger(RabbitMqConfig.class);
-
     @Autowired
-    private MqMsgLogService mqMsgLogService;
+    private HandleErrorService handleErrorService;
 
     @Bean(name = "rabbitConnectionFactory")
     public ConnectionFactory connectionFactory() {
@@ -47,19 +40,27 @@ public class RabbitMqConfig {
         rabbitTemplate.setMandatory(true);
         rabbitTemplate.setReturnCallback(returnCallback);
         rabbitTemplate.setConfirmCallback(confirmCallback);
+        rabbitTemplate.containerAckMode(AcknowledgeMode.MANUAL);
         return rabbitTemplate;
     }
 
     final RabbitTemplate.ConfirmCallback confirmCallback = new RabbitTemplate.ConfirmCallback() {
         @Override
         public void confirm(CorrelationData correlationData, boolean ack, String cause) {
-            String correlationDataId = correlationData.getId();
-            int msgId = Integer.parseInt(correlationDataId.split(":")[1]);
+            System.out.println("correlationData: " + correlationData);
+            System.out.println("ack" + ack);
             if (!ack) {
-                log.info("消息发送到Exchange失败，{}，cause：{}",correlationData,cause);
-                mqMsgLogService.updateCause(msgId,cause);
-            }else{
-                mqMsgLogService.updateCauseAndStatus(msgId, null,CommonConstant.MsgLogStatus.SEND_SUCCESS);
+                System.out.println("异常处理");
+                String[] split = correlationData.toString().split(":");
+                String errorCase = split[0];
+                String exchangeName = split[1];
+                String queueName = split[2];
+                long orderId = Long.valueOf(split[3]);
+                switch (errorCase) {
+                    case "error-handle-queue":
+                        handleErrorService.handleOrderNotReach(exchangeName,queueName,String.valueOf(orderId));
+                        break;
+                }
             }
         }
     };
@@ -67,10 +68,23 @@ public class RabbitMqConfig {
     final RabbitTemplate.ReturnCallback returnCallback = new RabbitTemplate.ReturnCallback() {
         @Override
         public void returnedMessage(Message message, int replyCode, String replyText, String exchange, String routingKey) {
-            WaimaiOrder waimaiOrder = JSONObject.parseObject(new String(message.getBody()), WaimaiOrder.class);
-            log.error("return exchange: " + exchange + ", routingKey: "
+            System.out.println("return exchange: " + exchange + ", routingKey: "
                     + routingKey + ", replyCode: " + replyCode + ", replyText: " + replyText);
-            mqMsgLogService.updateCauseAndStatus(waimaiOrder.getMsgId(),replyText,CommonConstant.MsgLogStatus.PRE_SEND);
+            switch (exchange) {
+                case "error-handle-exchange":
+                    handleErrorService.handleOrderNotReach(exchange,routingKey,new String(message.getBody()));
+                    break;
+            }
         }
     };
+
+    @Bean
+    public Queue orderQueue(){
+        return new Queue("error-handle-queue");
+    }
+
+    @Bean
+    public Exchange orderExchange(){
+        return ExchangeBuilder.directExchange("error-handle-exchange").build();
+    }
 }

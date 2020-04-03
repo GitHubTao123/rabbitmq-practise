@@ -1,8 +1,6 @@
 package com.yue.waimaiserver.service;
 
-import com.yue.waimaiserver.api.entity.OrderMsg;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.Queue;
+import com.yue.waimaiserver.api.entity.MqMsgLog;
 
 /**
  * @Author: lsSaitaoYue
@@ -10,5 +8,4 @@ import org.springframework.amqp.core.Queue;
  */
 public interface HandleErrorService {
 
-    boolean handleOrderError(Exchange exchange, Queue queue, OrderMsg orderMsg);
 }
